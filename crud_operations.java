@@ -31,7 +31,10 @@ public class crud_operations {
                         break;    
                     case "5":
                         viewBooks(connection);
-                        break;   
+                        break; 
+                    case "6":
+                        updateBook(scanner, connection);
+                        break;      
 
                     default:
                         System.out.println("Invalid choice, please try again.");
@@ -159,6 +162,25 @@ public class crud_operations {
                         ", Author Name: " + rs.getString("author_name") +
                         ", Order Amount: " + rs.getInt("total_order_amount"));
             }
+        }
+    }
+    private static void updateBook(Scanner scanner, Connection connection) throws SQLException {
+        System.out.println("Updating a book.");
+        System.out.print("Enter Book ID to update: ");
+        int bookId = Integer.parseInt(scanner.nextLine());
+        System.out.print("New Book Name (leave blank to keep same): ");
+        String bookName = scanner.nextLine();
+        System.out.print("New Stock (enter -1 to keep same): ");
+        int stock = Integer.parseInt(scanner.nextLine());
+
+        String sql = "UPDATE Books SET book_name = COALESCE(NULLIF(?, ''), book_name), " +
+                "stock = COALESCE(NULLIF(?, -1), stock) WHERE book_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, bookName);
+            pstmt.setInt(2, stock);
+            pstmt.setInt(3, bookId);
+            int rowsAffected = pstmt.executeUpdate();
+            System.out.println(rowsAffected + " book(s) updated.");
         }
     }
 
