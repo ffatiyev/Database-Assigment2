@@ -28,7 +28,10 @@ public class crud_operations {
                         break;   
                     case "4":
                         addOrder(scanner, connection);
-                        break;       
+                        break;    
+                    case "5":
+                        viewBooks(connection);
+                        break;   
 
                     default:
                         System.out.println("Invalid choice, please try again.");
@@ -137,6 +140,25 @@ public class crud_operations {
             updateBookVolumeStmt.setInt(1, orderAmount);
             updateBookVolumeStmt.setInt(2, bookId);
             updateBookVolumeStmt.executeUpdate();
+        }
+    }
+    private static void viewBooks(Connection connection) throws SQLException {
+        String sql = "SELECT b.book_id, b.stock, b.book_name, a.author_name, COALESCE(SUM(o.order_amount), 0) as total_order_amount " +
+                "FROM Books b " +
+                "LEFT JOIN Authors a ON b.author_id = a.author_id " +
+                "LEFT JOIN Orders o ON b.book_id = o.book_id " +
+                "GROUP BY b.book_id, b.book_name, a.author_name";
+
+        System.out.println("Books and their details:");
+        try (PreparedStatement pstmt = connection.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                System.out.println("Book ID: " + rs.getInt("book_id") +
+                        "Current stock: " + rs.getInt("stock") +
+                        ", Book name: " + rs.getString("book_name") +
+                        ", Author Name: " + rs.getString("author_name") +
+                        ", Order Amount: " + rs.getInt("total_order_amount"));
+            }
         }
     }
 
