@@ -20,6 +20,9 @@ public class crud_operations {
                     case "1":
                         addAuthor(scanner, connection);
                         break;
+                     case "2":
+                        addBook(scanner, connection);
+                        break;    
 
                     default:
                         System.out.println("Invalid choice, please try again.");
@@ -44,6 +47,27 @@ public class crud_operations {
             pstmt.setString(2, authorName);
             pstmt.executeUpdate();
             System.out.println("Author added successfully.");
+        }
+    }
+    private static void addBook(Scanner scanner, Connection connection) throws SQLException {
+        System.out.println("Adding a new book.");
+        System.out.print("Book ID: ");
+        int bookId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Book Name: ");
+        String bookName = scanner.nextLine();
+        System.out.print("Author ID: ");
+        int authorId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Stock: ");
+        int stock = Integer.parseInt(scanner.nextLine());
+
+        String sql = "INSERT INTO Books (book_id, book_name, author_id, stock) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, bookId);
+            pstmt.setString(2, bookName);
+            pstmt.setInt(3, authorId);
+            pstmt.setInt(4, stock);
+            pstmt.executeUpdate();
+            System.out.println("Book added successfully.");
         }
     } 
 
