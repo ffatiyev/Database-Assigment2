@@ -25,7 +25,10 @@ public class crud_operations {
                         break;  
                     case "3":
                         addCustomer(scanner, connection);
-                        break;      
+                        break;   
+                    case "4":
+                        addOrder(scanner, connection);
+                        break;       
 
                     default:
                         System.out.println("Invalid choice, please try again.");
@@ -86,6 +89,54 @@ public class crud_operations {
             pstmt.setString(2, customerName);
             pstmt.executeUpdate();
             System.out.println("Customer added successfully.");
+        }
+    }
+    private static void addOrder(Scanner scanner, Connection connection) throws SQLException {
+        System.out.println("Creating a new order.");
+        System.out.print("Order ID: ");
+        int orderId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Customer ID: ");
+        int customerId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Book ID: ");
+        int bookId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Order Amount: ");
+        int orderAmount = Integer.parseInt(scanner.nextLine());
+        System.out.print("Order Date (YYYY-MM-DD): ");
+        String orderDate = scanner.nextLine();
+
+        // Check if the stock is sufficient for the order
+        String checkStockSql = "SELECT stock FROM Books WHERE book_id = ?";
+        try (PreparedStatement checkStockStmt = connection.prepareStatement(checkStockSql)) {
+            checkStockStmt.setInt(1, bookId);
+            ResultSet rs = checkStockStmt.executeQuery();
+            if (rs.next()) {
+                int stock = rs.getInt("stock");
+                if (orderAmount > stock) {
+                    System.out.println("Order amount exceeds current stock. Order cannot be placed.");
+                    return;
+                }
+            } else {
+                System.out.println("Book not found.");
+                return;
+            }
+        }
+
+        String insertOrderSql = "INSERT INTO Orders (order_id, customer_id, book_id, order_amount, order_date) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement insertOrderStmt = connection.prepareStatement(insertOrderSql)) {
+            insertOrderStmt.setInt(1, orderId);
+            insertOrderStmt.setInt(2, customerId);
+            insertOrderStmt.setInt(3, bookId);
+            insertOrderStmt.setInt(4, orderAmount);
+            insertOrderStmt.setString(5, orderDate);
+            insertOrderStmt.executeUpdate();
+            System.out.println("Order created successfully.");
+        }
+
+        String updateStock = "UPDATE Books SET stock = stock - ? WHERE book_id = ?";
+        try (PreparedStatement updateBookVolumeStmt = connection.prepareStatement(updateStock)) {
+            updateBookVolumeStmt.setInt(1, orderAmount);
+            updateBookVolumeStmt.setInt(2, bookId);
+            updateBookVolumeStmt.executeUpdate();
         }
     }
 
