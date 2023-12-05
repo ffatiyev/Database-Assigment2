@@ -22,7 +22,10 @@ public class crud_operations {
                         break;
                      case "2":
                         addBook(scanner, connection);
-                        break;    
+                        break;  
+                    case "3":
+                        addCustomer(scanner, connection);
+                        break;      
 
                     default:
                         System.out.println("Invalid choice, please try again.");
@@ -70,6 +73,21 @@ public class crud_operations {
             System.out.println("Book added successfully.");
         }
     } 
+     private static void addCustomer(Scanner scanner, Connection connection) throws SQLException {
+        System.out.println("Adding a new customer.");
+        System.out.print("Customer ID: ");
+        int customerId = Integer.parseInt(scanner.nextLine());
+        System.out.print("Customer's Name: ");
+        String customerName = scanner.nextLine();
+
+        String sql = "INSERT INTO Customers (customer_id, customer_name) VALUES (?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, customerId);
+            pstmt.setString(2, customerName);
+            pstmt.executeUpdate();
+            System.out.println("Customer added successfully.");
+        }
+    }
 
 
 }
