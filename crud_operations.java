@@ -34,7 +34,10 @@ public class crud_operations {
                         break; 
                     case "6":
                         updateBook(scanner, connection);
-                        break;      
+                        break;     
+                     case "7":
+                        deleteBook(scanner, connection);
+                        break; 
 
                     default:
                         System.out.println("Invalid choice, please try again.");
@@ -181,6 +184,18 @@ public class crud_operations {
             pstmt.setInt(3, bookId);
             int rowsAffected = pstmt.executeUpdate();
             System.out.println(rowsAffected + " book(s) updated.");
+        }
+    }
+     private static void deleteBook(Scanner scanner, Connection connection) throws SQLException {
+        System.out.println("Deleting a book.");
+        System.out.print("Enter Book ID to delete: ");
+        int bookId = Integer.parseInt(scanner.nextLine());
+
+        String sql = "DELETE FROM Books WHERE book_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, bookId);
+            int rowsAffected = pstmt.executeUpdate();
+            System.out.println(rowsAffected + " book(s) deleted.");
         }
     }
 
