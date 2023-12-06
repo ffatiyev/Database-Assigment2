@@ -38,6 +38,13 @@ public class crud_operations {
                      case "7":
                         deleteBook(scanner, connection);
                         break; 
+                    case "8":
+
+                        System.out.print("Input the name of the table to get the metadata for: ");
+
+                        String name_of_table = scanner.nextLine();
+
+                        get_metadata(connection, name_of_table);    
 
                     default:
                         System.out.println("Invalid choice, please try again.");
@@ -196,6 +203,18 @@ public class crud_operations {
             pstmt.setInt(1, bookId);
             int rowsAffected = pstmt.executeUpdate();
             System.out.println(rowsAffected + " book(s) deleted.");
+        }
+    }
+    private static void get_metadata(Connection conn, String name_of_table) {
+        try {
+
+            table_structures(conn);
+            columns(conn, name_of_table);
+            primary_keys(conn, name_of_table);
+            foreign_keys(conn, name_of_table);
+        } catch (SQLException e) {
+            System.out.println("Error happened for the table " + name_of_table + " .");
+            e.printStackTrace();
         }
     }
 
