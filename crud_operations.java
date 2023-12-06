@@ -11,7 +11,7 @@ public class crud_operations {
         try (Scanner scanner = new Scanner(System.in);
              Connection connection = DriverManager.getConnection(DB_URL, USER, PASS)) {
 
-                boolean keepRunning = true;
+            boolean keepRunning = true;
             while (keepRunning) {
                 System.out.println("Choose an option: \n1 - Add Author\n2 - Add Book\n3 - Add Customer\n4 - Add Order\n5 - View Books\n6 - Update Book\n7 - Delete Book\n8 - Get MetaData\n9 - Exit");
                 String choice = scanner.nextLine();
@@ -20,37 +20,38 @@ public class crud_operations {
                     case "1":
                         addAuthor(scanner, connection);
                         break;
-                     case "2":
+                    case "2":
                         addBook(scanner, connection);
-                        break;  
+                        break;
                     case "3":
                         addCustomer(scanner, connection);
-                        break;   
+                        break;
                     case "4":
                         addOrder(scanner, connection);
-                        break;    
+                        break;
                     case "5":
                         viewBooks(connection);
-                        break; 
+                        break;
                     case "6":
                         updateBook(scanner, connection);
-                        break;     
-                     case "7":
+                        break;
+                    case "7":
                         deleteBook(scanner, connection);
-                        break; 
+                        break;
                     case "8":
 
                         System.out.print("Input the name of the table to get the metadata for: ");
 
                         String name_of_table = scanner.nextLine();
 
-                        get_metadata(connection, name_of_table);    
-
+                        get_metadata(connection, name_of_table);
+                    case "9":
+                        keepRunning = false;
+                        break;
                     default:
                         System.out.println("Invalid choice, please try again.");
                 }
             }
-        
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -71,6 +72,8 @@ public class crud_operations {
             System.out.println("Author added successfully.");
         }
     }
+
+
     private static void addBook(Scanner scanner, Connection connection) throws SQLException {
         System.out.println("Adding a new book.");
         System.out.print("Book ID: ");
@@ -91,8 +94,10 @@ public class crud_operations {
             pstmt.executeUpdate();
             System.out.println("Book added successfully.");
         }
-    } 
-     private static void addCustomer(Scanner scanner, Connection connection) throws SQLException {
+    }
+
+
+    private static void addCustomer(Scanner scanner, Connection connection) throws SQLException {
         System.out.println("Adding a new customer.");
         System.out.print("Customer ID: ");
         int customerId = Integer.parseInt(scanner.nextLine());
@@ -107,6 +112,8 @@ public class crud_operations {
             System.out.println("Customer added successfully.");
         }
     }
+
+
     private static void addOrder(Scanner scanner, Connection connection) throws SQLException {
         System.out.println("Creating a new order.");
         System.out.print("Order ID: ");
@@ -155,6 +162,9 @@ public class crud_operations {
             updateBookVolumeStmt.executeUpdate();
         }
     }
+
+
+
     private static void viewBooks(Connection connection) throws SQLException {
         String sql = "SELECT b.book_id, b.stock, b.book_name, a.author_name, COALESCE(SUM(o.order_amount), 0) as total_order_amount " +
                 "FROM Books b " +
@@ -174,6 +184,9 @@ public class crud_operations {
             }
         }
     }
+
+
+
     private static void updateBook(Scanner scanner, Connection connection) throws SQLException {
         System.out.println("Updating a book.");
         System.out.print("Enter Book ID to update: ");
@@ -193,7 +206,9 @@ public class crud_operations {
             System.out.println(rowsAffected + " book(s) updated.");
         }
     }
-     private static void deleteBook(Scanner scanner, Connection connection) throws SQLException {
+
+
+    private static void deleteBook(Scanner scanner, Connection connection) throws SQLException {
         System.out.println("Deleting a book.");
         System.out.print("Enter Book ID to delete: ");
         int bookId = Integer.parseInt(scanner.nextLine());
@@ -205,6 +220,10 @@ public class crud_operations {
             System.out.println(rowsAffected + " book(s) deleted.");
         }
     }
+
+
+    // META DATA ACCESS
+
     private static void get_metadata(Connection conn, String name_of_table) {
         try {
 
@@ -218,5 +237,62 @@ public class crud_operations {
         }
     }
 
+    private static void table_structures(Connection conn) throws SQLException {
+
+        DatabaseMetaData metaData = conn.getMetaData();
+
+
+        try (ResultSet tables = metaData.getTables(null, null, "%", new String[]{"TABLE"})) {
+
+            while (tables.next()) {
+                System.out.println("Table: " + tables.getString("TABLE_NAME") + ", Type: " + tables.getString("TABLE_TYPE"));
+            }
+        }
+    }
+
+    private static void columns(Connection conn, String name_of_table) throws SQLException {
+        DatabaseMetaData metaData = conn.getMetaData();
+
+        System.out.println("The columns of the table " + name_of_table + "are: ");
+        try (ResultSet columns = metaData.getColumns(null, null, name_of_table, null)) {
+            while (columns.next()) {
+                System.out.println("Column: " + columns.getString("COLUMN_NAME") +
+                        " Type of column: " + columns.getString("TYPE_NAME") +
+                        " Size of column: " + columns.getInt("COLUMN_SIZE"));
+            }
+        }
+    }
+
+
+    private static void primary_keys(Connection conn, String name_of_table) throws SQLException {
+
+        DatabaseMetaData metaData = conn.getMetaData();
+
+        System.out.println("Primary keys for the table " + name_of_table + " are: ");
+
+        try (ResultSet pKeys = metaData.getPrimaryKeys(null, null, name_of_table)) {
+            while (pKeys.next()) {
+                System.out.println("Column: " + pKeys.getString("COLUMN_NAME") +
+                        "Primary key: " + pKeys.getString("PK_NAME"));
+            }
+        }
+    }
+
+    private static void foreign_keys(Connection conn, String name_of_table) throws SQLException {
+
+        DatabaseMetaData metaData = conn.getMetaData();
+
+        System.out.println("Foreign Primary keys for the table " + name_of_table + " are;");
+
+        try (ResultSet fKeys = metaData.getImportedKeys(null, null, name_of_table)) {
+            while (fKeys.next()) {
+
+                System.out.println("Foreign key: " + fKeys.getString("FK_NAME") +
+                        " Column: " + fKeys.getString("FKCOLUMN_NAME") +
+                        " Table: " + fKeys.getString("PKTABLE_NAME") +
+                        " Column: " + fKeys.getString("PKCOLUMN_NAME"));
+            }
+        }
+    }
 
 }
